@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "485031165296",
+    "project_id": "diarymobile42",
+    "storage_bucket": "diarymobile42.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:485031165296:android:2f04d0d0deed6905f1e3b5",
+        "android_client_info": {
+          "package_name": "com.b3dstudio.diary"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCf5KyXMBqT2_mK1YFB3nx5QMZxybUHHwE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
