@@ -59,4 +59,5 @@ class DefaultFirebaseOptions {
     projectId: 'diarymobile42',
     storageBucket: 'diarymobile42.appspot.com',
   );
+
 }
