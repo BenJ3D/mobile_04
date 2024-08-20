@@ -57,6 +57,7 @@ class DefaultFirebaseOptions {
     appId: '1:485031165296:android:b8bae418cb584ab7f1e3b5',
     messagingSenderId: '485031165296',
     projectId: 'diarymobile42',
+    databaseURL: 'https://diarymobile42-default-rtdb.europe-west1.firebasedatabase.app',
     storageBucket: 'diarymobile42.appspot.com',
   );
 

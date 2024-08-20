@@ -1,6 +1,7 @@
 {
   "project_info": {
     "project_number": "485031165296",
+    "firebase_url": "https://diarymobile42-default-rtdb.europe-west1.firebasedatabase.app",
     "project_id": "diarymobile42",
     "storage_bucket": "diarymobile42.appspot.com"
   },
@@ -13,6 +14,14 @@
         }
       },
       "oauth_client": [
+        {
+          "client_id": "485031165296-7tak3r99gvl7u121alsgq8ujmjpdfiju.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.diaryapp",
+            "certificate_hash": "082b49e331071349278b298c213d4782ce4e2e90"
+          }
+        },
         {
           "client_id": "485031165296-njordfi9sr0jltb0ctqvjsld38pnetdb.apps.googleusercontent.com",
           "client_type": 3
