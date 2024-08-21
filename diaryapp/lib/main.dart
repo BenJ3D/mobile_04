@@ -20,12 +20,12 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'DiaryApp',
       initialRoute: '/',
       routes: {
         '/': (context) => const AuthWrapper(),
         '/login': (context) => const LoginPage(),
-        '/diary': (context) => const DiaryPage(),
+        '/diary': (context) => DiaryPage(),
       },
     );
   }
@@ -44,7 +44,7 @@ class AuthWrapper extends StatelessWidget {
         }
 
         if (snapshot.hasData) {
-          return const DiaryPage();
+          return DiaryPage();
         } else {
           return const LoginPage();
         }
