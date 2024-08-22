@@ -35,12 +35,12 @@ class _NotesPageState extends State<NotesPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Your last diary entries'),
-        // actions: [
-        //   IconButton(
-        //     icon: Icon(Icons.refresh),
-        //     onPressed: _loadNotes,
-        //   ),
-        // ],
+        actions: [
+          IconButton(
+            icon: Icon(Icons.refresh),
+            onPressed: _loadNotes,
+          ),
+        ],
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -53,6 +53,8 @@ class _NotesPageState extends State<NotesPage> {
                           .length, // Utilisez la longueur réelle de la liste
                   itemBuilder: (context, index) {
                     final note = _noteService.notes[index];
+                    final String noteKey = note['key'];
+
                     // Convertir le timestamp en DateTime
                     final DateTime date = DateTime.fromMillisecondsSinceEpoch(
                         note['date'] as int);
@@ -68,17 +70,58 @@ class _NotesPageState extends State<NotesPage> {
                         subtitle: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(note['text']),
-                            SizedBox(
+                            Text(note['icon']),
+                            const SizedBox(
                                 height: 4), // Espace entre le texte et la date
                             Text(
                               formattedDate,
-                              style:
-                                  TextStyle(fontSize: 12, color: Colors.grey),
+                              style: const TextStyle(
+                                  fontSize: 12, color: Colors.grey),
                             ),
                           ],
                         ),
-                        trailing: Text(note['icon']),
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              icon: const Icon(Icons.delete,
+                                  color: Colors.blueGrey),
+                              onPressed: () async {
+                                // Confirmer la suppression
+                                final confirm = await showDialog(
+                                  context: context,
+                                  builder: (BuildContext context) {
+                                    return AlertDialog(
+                                      title: const Text('Delete Note'),
+                                      content: const Text(
+                                          'Are you sure you want to delete this note?'),
+                                      actions: [
+                                        TextButton(
+                                          child: const Text('Cancel'),
+                                          onPressed: () {
+                                            Navigator.of(context).pop(false);
+                                          },
+                                        ),
+                                        TextButton(
+                                          child: const Text('Delete'),
+                                          onPressed: () {
+                                            Navigator.of(context).pop(true);
+                                          },
+                                        ),
+                                      ],
+                                    );
+                                  },
+                                );
+
+                                if (confirm == true) {
+                                  // Supprimer la note
+                                  await _noteService.deleteNote(noteKey);
+                                  _loadNotes();
+                                }
+                              },
+                            ),
+                          ],
+                        ),
                         onTap: () {
                           // Action on tap
                         },

@@ -80,4 +80,17 @@ class NoteService {
       }
     }
   }
+
+  Future<void> deleteNote(String key) async {
+    try {
+      await _database.child(key).remove();
+      notes.removeWhere((note) => note['key'] == key);
+      await fetchNotes(); // Refresh the notes after delete
+      if (_updateCallback != null) {
+        _updateCallback!();
+      }
+    } catch (error) {
+      print("Failed to delete note: $error");
+    }
+  }
 }
