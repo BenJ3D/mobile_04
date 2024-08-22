@@ -1,47 +1,92 @@
 import 'package:diaryapp/NotesPage.dart';
+import 'package:diaryapp/services/NoteService.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
-class DiaryPage extends StatelessWidget {
-  DiaryPage({super.key});
+class DiaryPage extends StatefulWidget {
+  DiaryPage();
 
+  @override
+  _DiaryPageState createState() => _DiaryPageState();
+}
+
+class _DiaryPageState extends State<DiaryPage> {
   final DatabaseReference _database = FirebaseDatabase.instance.ref();
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  final NoteService _noteService = NoteService();
 
-  void _addTestData() async {
+  void _showAddNoteDialog() {
+    final TextEditingController titleController = TextEditingController();
+    final TextEditingController textController = TextEditingController();
+    final TextEditingController iconController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('New Diary Entry'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: titleController,
+                  decoration: const InputDecoration(labelText: 'Title'),
+                ),
+                TextField(
+                  controller: textController,
+                  decoration: const InputDecoration(labelText: 'Text'),
+                  maxLines: 3,
+                ),
+                TextField(
+                  controller: iconController,
+                  decoration: const InputDecoration(labelText: 'Emoji'),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              child: Text('Cancel'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: Text('Save'),
+              onPressed: () async {
+                if (titleController.text.isNotEmpty &&
+                    textController.text.isNotEmpty) {
+                  await _noteService.addNote(
+                    titleController.text,
+                    textController.text,
+                    iconController.text,
+                  );
+                  Navigator.of(context).pop();
+                } else {
+                  // Vous pouvez ajouter une alerte ici pour indiquer que les champs sont requis
+                }
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _addNote() async {
     // Récupérer l'utilisateur actuellement connecté
     User? currentUser = _auth.currentUser;
 
     // Vérifiez si l'utilisateur est bien connecté
     if (currentUser != null) {
-      String uid = currentUser.uid;
-      String usermail = currentUser.email ?? 'example@email.com';
-      // String usermail = 'ben.ducrocq@gmail.com';
-      String usermailFormat = usermail.replaceAll('.' , '_');
-
-      // Créer une nouvelle note avec une clé unique générée par push()
-      DatabaseReference newNoteRef = _database.child('notes').push();
-
-      Map<String, dynamic> newNote = {
-        "date": DateTime.now().millisecondsSinceEpoch,
-        "icon": "satisfied",
-        "text": "This is a new test note 2",
-        "title": "New Test Note 2",
-        "usermail" : usermail,
-      };
-
-      // Ajouter la nouvelle note à Firebase
-      newNoteRef.set(newNote).then((_) {
-        print("New note added successfully");
-      }).catchError((error) {
-        print("Failed to add note: $error");
-      });
+      _showAddNoteDialog();
     } else {
       print("No user is signed in");
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -52,6 +97,9 @@ class DiaryPage extends StatelessWidget {
             icon: const Icon(Icons.logout),
             onPressed: () async {
               await FirebaseAuth.instance.signOut();
+              // Révoquer les autorisations Google
+              final GoogleSignIn googleSignIn = GoogleSignIn();
+              await googleSignIn.signOut();
               Navigator.pushReplacementNamed(context, '/login');
             },
           ),
@@ -61,11 +109,14 @@ class DiaryPage extends StatelessWidget {
         child: Column(
           children: [
             const Text('Welcome to your Diary'),
+            Expanded(child: NotesPage()),
             ElevatedButton(
-              onPressed: _addTestData,
-              child: const Text("Add Test Data"),
+              onPressed: _addNote,
+              child: const Text("New diary entry"),
             ),
-            NotesPage(usermail: usermail)
+            const SizedBox(
+              height: 50,
+            )
           ],
         ),
       ),

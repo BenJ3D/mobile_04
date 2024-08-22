@@ -1,77 +1,91 @@
+import 'package:diaryapp/services/NoteService.dart';
 import 'package:flutter/material.dart';
-import 'package:firebase_database/firebase_database.dart';
+import 'package:intl/intl.dart';
 
 class NotesPage extends StatefulWidget {
-  final String usermail;
-
-  NotesPage({required this.usermail});
+  NotesPage();
 
   @override
   _NotesPageState createState() => _NotesPageState();
 }
 
 class _NotesPageState extends State<NotesPage> {
-  final DatabaseReference _database = FirebaseDatabase.instance.ref('notes');
-  List<Map<String, dynamic>> _notes = [];
+  final NoteService _noteService = NoteService();
   bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    _fetchNotes();
-  }
- Future<void> _fetchNotes() async {
-    _database.orderByChild('usermail').equalTo(widget.usermail).once().then((DatabaseEvent event) {
-      if (event.snapshot.exists()) {
-        Map<dynamic, dynamic> notesMap = event.snapshot.value as Map<dynamic, dynamic>;
-        setState(() {
-          _notes = notesMap.entries.map((e) => {
-            'key': e.key,
-            ...e.value as Map<String, dynamic>
-          }).toList();
-          _isLoading = false;
-        });
-      } else {
-        setState(() {
-          _notes = [];
-          _isLoading = false;
-        });
+    _noteService.setUpdateCallback(() {
+      if (mounted) {
+        setState(() {});
       }
-    }).catchError((error) {
-      print("Failed to retrieve notes: $error");
-      setState(() {
-        _isLoading = false;
-      });
     });
+    _loadNotes();
+  }
+
+  Future<void> _loadNotes() async {
+    setState(() => _isLoading = true);
+    await _noteService.fetchNotes();
+    setState(() => _isLoading = false);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('My Notes'),
+        title: const Text('Your last diary entries'),
+        // actions: [
+        //   IconButton(
+        //     icon: Icon(Icons.refresh),
+        //     onPressed: _loadNotes,
+        //   ),
+        // ],
       ),
       body: _isLoading
-          ? Center(child: CircularProgressIndicator())
-          : _notes.isEmpty
-          ? Center(child: Text('No notes found'))
-          : ListView.builder(
-        itemCount: _notes.length,
-        itemBuilder: (context, index) {
-          final note = _notes[index];
-          return Card(
-            margin: EdgeInsets.symmetric(vertical: 10, horizontal: 15),
-            child: ListTile(
-              title: Text(note['title']),
-              subtitle: Text(note['text']),
-              trailing: Text(note['icon']),
-              onTap: () {
-                // Action on tap, e.g., navigate to detail or edit page
-              },
-            ),
-          );
-        },
-      ),
+          ? const Center(child: CircularProgressIndicator())
+          : _noteService.notes.isEmpty
+              ? const Center(child: Text('No notes found'))
+              : ListView.builder(
+                  itemCount: _noteService.notes.length >= 5
+                      ? 5
+                      : _noteService.notes
+                          .length, // Utilisez la longueur réelle de la liste
+                  itemBuilder: (context, index) {
+                    final note = _noteService.notes[index];
+                    // Convertir le timestamp en DateTime
+                    final DateTime date = DateTime.fromMillisecondsSinceEpoch(
+                        note['date'] as int);
+                    // Formater la date
+                    final String formattedDate =
+                        DateFormat('dd/MM/yyyy HH:mm').format(date);
+
+                    return Card(
+                      margin: const EdgeInsets.symmetric(
+                          vertical: 10, horizontal: 15),
+                      child: ListTile(
+                        title: Text(note['title']),
+                        subtitle: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(note['text']),
+                            SizedBox(
+                                height: 4), // Espace entre le texte et la date
+                            Text(
+                              formattedDate,
+                              style:
+                                  TextStyle(fontSize: 12, color: Colors.grey),
+                            ),
+                          ],
+                        ),
+                        trailing: Text(note['icon']),
+                        onTap: () {
+                          // Action on tap
+                        },
+                      ),
+                    );
+                  },
+                ),
     );
   }
 }

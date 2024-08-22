@@ -36,10 +36,8 @@ class LoginPage extends StatelessWidget {
           onPressed: () async {
             User? user = await signInWithGoogle();
             if (user != null) {
-              print('YOUHOU: ${user.email}  ${user.displayName}');
               Navigator.pushReplacementNamed(context, '/diary');
             }
-            // Logique de connexion
           },
           child: const Text('Login with Google'),
         ),
