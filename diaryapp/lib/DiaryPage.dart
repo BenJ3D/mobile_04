@@ -39,11 +39,13 @@ class _DiaryPageState extends State<DiaryPage> {
                     TextField(
                       controller: titleController,
                       decoration: const InputDecoration(labelText: 'Title'),
+                      maxLength: 50,
                     ),
                     TextField(
                       controller: textController,
                       decoration: const InputDecoration(labelText: 'Text'),
                       maxLines: 3,
+                      maxLength: 500,
                     ),
                     const SizedBox(height: 10),
                     const Text('Select your mood:'),

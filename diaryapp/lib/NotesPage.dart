@@ -61,22 +61,52 @@ class _NotesPageState extends State<NotesPage> {
   void _showNoteDetailsDialog(Map<String, dynamic> note, String noteKey) {
     final DateTime date =
         DateTime.fromMillisecondsSinceEpoch(note['date'] as int);
-    final String formattedDate = DateFormat('dd/MM/yyyy HH:mm').format(date);
+    final String formattedDate = DateFormat('dd/MM/yyyy').format(date);
 
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text(note['title']),
+          title: Text(
+            note['title'],
+            style: const TextStyle(
+                fontSize: 13,
+                fontStyle: FontStyle.italic,
+                color: Colors.grey,
+                fontWeight: FontWeight.w600),
+          ),
           content: SingleChildScrollView(
             child: ListBody(
               children: <Widget>[
-                Text('Date: $formattedDate'),
+                Text('$formattedDate',
+                    style: const TextStyle(
+                      fontSize: 15,
+                    )),
                 const SizedBox(height: 10),
-                Text(
-                    'Mood: ${moodIcons[note['icon']] ?? note['icon']}'), // Afficher l'humeur ou le texte brut
+                Row(
+                  children: [
+                    const Text(
+                      'Mood:',
+                      style: TextStyle(fontSize: 14),
+                    ),
+                    const SizedBox(
+                      width: 40,
+                    ),
+                    Text(
+                      '${moodIcons[note['icon']] ?? note['icon']}',
+                      style: const TextStyle(fontSize: 32),
+                    ), // Afficher l'humeur ou le texte brut
+                  ],
+                ),
                 const SizedBox(height: 10),
-                Text('Text:'),
+                const Text(
+                  'Text:',
+                  style: TextStyle(
+                      fontSize: 13,
+                      fontStyle: FontStyle.italic,
+                      color: Colors.grey,
+                      fontWeight: FontWeight.w600),
+                ),
                 const SizedBox(height: 5),
                 Text(note['text']),
               ],
@@ -109,70 +139,91 @@ class _NotesPageState extends State<NotesPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Your last diary entries'),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.refresh),
-            onPressed: _loadNotes,
-          ),
-        ],
-      ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _noteService.notes.isEmpty
-              ? const Center(child: Text('No notes found'))
-              : ListView.builder(
-                  itemCount: _noteService.notes.length >= 15
-                      ? 15
-                      : _noteService.notes.length,
-                  itemBuilder: (context, index) {
-                    final note = _noteService.notes[index];
-                    final String noteKey = note['key'];
+        appBar: AppBar(
+          title: const Text('Your last diary entries'),
+          actions: [
+            IconButton(
+              icon: Icon(Icons.refresh),
+              onPressed: _loadNotes,
+            ),
+          ],
+        ),
+        body: _isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : _noteService.notes.isEmpty
+                ? const Center(child: Text('No notes found'))
+                : ListView.builder(
+                    itemCount: _noteService.notes.length >= 15
+                        ? 15
+                        : _noteService.notes.length,
+                    itemBuilder: (context, index) {
+                      final note = _noteService.notes[index];
+                      final String noteKey = note['key'];
 
-                    final DateTime date = DateTime.fromMillisecondsSinceEpoch(
-                        note['date'] as int);
-                    final String formattedDate =
-                        DateFormat('dd/MM/yyyy HH:mm').format(date);
+                      final DateTime date = DateTime.fromMillisecondsSinceEpoch(
+                          note['date'] as int);
+                      final String formattedDate =
+                          DateFormat('dd/MM/yyyy').format(date);
 
-                    return Card(
-                      margin: const EdgeInsets.symmetric(
-                          vertical: 10, horizontal: 15),
-                      child: ListTile(
-                        title: Text(note['title']),
-                        subtitle: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(moodIcons[note['icon']] ??
-                                note[
-                                    'icon']), // Afficher l'émoticône ou le texte brut
-                            const SizedBox(
-                                height: 4), // Espace entre le texte et la date
-                            Text(
-                              formattedDate,
-                              style: const TextStyle(
-                                  fontSize: 12, color: Colors.grey),
-                            ),
-                          ],
-                        ),
-                        trailing: IconButton(
-                          icon:
-                              const Icon(Icons.delete, color: Colors.blueGrey),
-                          onPressed: () async {
-                            final confirm = await _confirmDelete(context);
-                            if (confirm == true) {
-                              await _noteService.deleteNote(noteKey);
-                              _loadNotes();
-                            }
+                      return Card(
+                        margin: const EdgeInsets.symmetric(
+                            vertical: 10, horizontal: 15),
+                        child: InkWell(
+                          onTap: () {
+                            _showNoteDetailsDialog(note,
+                                noteKey); // Afficher les détails de la note
                           },
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        note['title'],
+                                        style: const TextStyle(fontSize: 22),
+                                      ),
+                                      const SizedBox(
+                                          height:
+                                              4), // Espace entre le titre et la date
+                                      Text(
+                                        formattedDate,
+                                        style: const TextStyle(
+                                            fontSize: 14, color: Colors.grey),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                Text(
+                                  moodIcons[note['icon']] ?? note['icon'],
+                                  style: const TextStyle(
+                                      fontSize:
+                                          30), // Taille réduite de l'émoticône
+                                ),
+                                const SizedBox(
+                                    width:
+                                        42), // Espace entre l'émoticône et le bouton de suppression
+                                IconButton(
+                                  icon: const Icon(Icons.delete,
+                                      color: Colors.blueGrey),
+                                  onPressed: () async {
+                                    final confirm =
+                                        await _confirmDelete(context);
+                                    if (confirm == true) {
+                                      await _noteService.deleteNote(noteKey);
+                                      _loadNotes();
+                                    }
+                                  },
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
-                        onTap: () {
-                          _showNoteDetailsDialog(note, noteKey);
-                        },
-                      ),
-                    );
-                  },
-                ),
-    );
+                      );
+                    },
+                  ));
   }
 }
