@@ -123,8 +123,8 @@ class _NotesPageState extends State<NotesPage> {
           : _noteService.notes.isEmpty
               ? const Center(child: Text('No notes found'))
               : ListView.builder(
-                  itemCount: _noteService.notes.length >= 5
-                      ? 5
+                  itemCount: _noteService.notes.length >= 15
+                      ? 15
                       : _noteService.notes.length,
                   itemBuilder: (context, index) {
                     final note = _noteService.notes[index];
