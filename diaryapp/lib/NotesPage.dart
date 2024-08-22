@@ -14,6 +14,7 @@ class NotesPage extends StatefulWidget {
 class _NotesPageState extends State<NotesPage> {
   final NoteService _noteService = NoteService();
   bool _isLoading = true;
+  late int numberEntriesDisplay = _noteService.notes.length;
 
   @override
   void initState() {
@@ -140,10 +141,31 @@ class _NotesPageState extends State<NotesPage> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: const Text('Your last diary entries'),
+          backgroundColor: Colors.blueGrey.shade800,
+          title: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'Your last diary :',
+                style:
+                    TextStyle(color: Colors.grey, fontStyle: FontStyle.italic),
+              ),
+              Flexible(
+                child: Text(
+                  // '(total 123456789123456123456789456123)',
+                  '(total entries: ${_noteService.notes.length})',
+                  maxLines: 3,
+                  style: const TextStyle(
+                      color: Colors.grey,
+                      fontStyle: FontStyle.italic,
+                      fontSize: 14.5),
+                ),
+              ),
+            ],
+          ),
           actions: [
             IconButton(
-              icon: Icon(Icons.refresh),
+              icon: const Icon(Icons.refresh),
               onPressed: _loadNotes,
             ),
           ],
@@ -153,9 +175,7 @@ class _NotesPageState extends State<NotesPage> {
             : _noteService.notes.isEmpty
                 ? const Center(child: Text('No notes found'))
                 : ListView.builder(
-                    itemCount: _noteService.notes.length >= 15
-                        ? 15
-                        : _noteService.notes.length,
+                    itemCount: numberEntriesDisplay,
                     itemBuilder: (context, index) {
                       final note = _noteService.notes[index];
                       final String noteKey = note['key'];
@@ -169,6 +189,10 @@ class _NotesPageState extends State<NotesPage> {
                         margin: const EdgeInsets.symmetric(
                             vertical: 10, horizontal: 15),
                         child: InkWell(
+                          focusColor: Colors.transparent,
+                          highlightColor: Colors.transparent,
+                          hoverColor: Colors.transparent,
+                          splashColor: Colors.transparent,
                           onTap: () {
                             _showNoteDetailsDialog(note,
                                 noteKey); // Afficher les détails de la note

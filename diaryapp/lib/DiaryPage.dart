@@ -115,10 +115,19 @@ class _DiaryPageState extends State<DiaryPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.blueGrey.shade800,
       appBar: AppBar(
+        backgroundColor: Colors.blueGrey.shade800,
+        title: const Text(
+          'DiaryApp 42',
+          style: TextStyle(color: Colors.white, fontSize: 20),
+        ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.logout),
+            icon: const Icon(
+              Icons.logout,
+              color: Colors.white,
+            ),
             onPressed: () async {
               await FirebaseAuth.instance.signOut();
               // Révoquer les autorisations Google
@@ -132,7 +141,7 @@ class _DiaryPageState extends State<DiaryPage> {
       body: Center(
         child: Column(
           children: [
-            const Text('Welcome to your Diary'),
+            // const Text('Welcome to your Diary'),
             Expanded(child: NotesPage()),
             ElevatedButton(
               onPressed: _addNote,

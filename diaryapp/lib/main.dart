@@ -27,6 +27,10 @@ class MyApp extends StatelessWidget {
         '/login': (context) => const LoginPage(),
         '/diary': (context) => DiaryPage(),
       },
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blueGrey),
+        useMaterial3: true,
+      ),
     );
   }
 }
@@ -59,8 +63,13 @@ class LoginPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
-        title: const Text('Login Page'),
+        backgroundColor: Colors.transparent,
+        title: const Text(
+          'Diary App 42',
+          style: TextStyle(color: Colors.white),
+        ),
       ),
       body: Center(
         child: ElevatedButton(
@@ -70,7 +79,19 @@ class LoginPage extends StatelessWidget {
               Navigator.pushReplacementNamed(context, '/diary');
             }
           },
-          child: const Text('Login with Google'),
+          style: ElevatedButton.styleFrom(
+            foregroundColor: Theme.of(context).primaryColorLight,
+            backgroundColor: Theme.of(context).primaryColor,
+            padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 15),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(30),
+            ),
+            elevation: 5,
+          ),
+          child: const Text(
+            'Login',
+            style: TextStyle(fontSize: 24),
+          ),
         ),
       ),
     );
