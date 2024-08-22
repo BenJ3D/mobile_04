@@ -73,7 +73,7 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.transparent,
+      backgroundColor: Colors.blueGrey.shade800,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         title: const Text(
@@ -108,21 +108,66 @@ class _LoginPageState extends State<LoginPage> {
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Choose login method'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ElevatedButton(
-                onPressed: () => _handleLogin(signInWithGoogle),
-                child: const Text('Login with Google'),
-              ),
-              const SizedBox(height: 10),
-              ElevatedButton(
-                onPressed: () => _handleLogin(signInWithGitHub),
-                child: const Text('Login with GitHub'),
-              ),
-            ],
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20.0),
+          ),
+          backgroundColor: Colors.white,
+          child: Container(
+            padding: const EdgeInsets.all(20),
+            constraints: const BoxConstraints(
+              maxWidth: 400,
+              maxHeight: 300,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  'Choose login method',
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                ElevatedButton(
+                  onPressed: () => _handleLogin(signInWithGoogle),
+                  style: ElevatedButton.styleFrom(
+                    foregroundColor: Theme.of(context).primaryColorLight,
+                    backgroundColor: Theme.of(context).primaryColor,
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 50, vertical: 15),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                    elevation: 5,
+                  ),
+                  child: const Text(
+                    'Google',
+                    style: TextStyle(fontSize: 20),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                ElevatedButton(
+                  onPressed: () => _handleLogin(signInWithGitHub),
+                  style: ElevatedButton.styleFrom(
+                    foregroundColor: Theme.of(context).primaryColorLight,
+                    backgroundColor: Theme.of(context).primaryColor,
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 50, vertical: 15),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                    elevation: 5,
+                  ),
+                  child: const Text(
+                    'GitHub',
+                    style: TextStyle(fontSize: 20),
+                  ),
+                ),
+              ],
+            ),
           ),
         );
       },
