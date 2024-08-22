@@ -2,6 +2,8 @@ import 'package:diaryapp/services/NoteService.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
+import 'icon_list.dart';
+
 class NotesPage extends StatefulWidget {
   NotesPage();
 
@@ -71,7 +73,8 @@ class _NotesPageState extends State<NotesPage> {
               children: <Widget>[
                 Text('Date: $formattedDate'),
                 const SizedBox(height: 10),
-                Text('Icon: ${note['icon']}'),
+                Text(
+                    'Mood: ${moodIcons[note['icon']] ?? note['icon']}'), // Afficher l'humeur ou le texte brut
                 const SizedBox(height: 10),
                 Text('Text:'),
                 const SizedBox(height: 5),
@@ -140,7 +143,9 @@ class _NotesPageState extends State<NotesPage> {
                         subtitle: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(note['icon']),
+                            Text(moodIcons[note['icon']] ??
+                                note[
+                                    'icon']), // Afficher l'émoticône ou le texte brut
                             const SizedBox(
                                 height: 4), // Espace entre le texte et la date
                             Text(
