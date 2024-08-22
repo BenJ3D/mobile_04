@@ -130,10 +130,12 @@ class _DiaryPageState extends State<DiaryPage> {
             ),
             onPressed: () async {
               await FirebaseAuth.instance.signOut();
-              // Révoquer les autorisations Google
               final GoogleSignIn googleSignIn = GoogleSignIn();
               await googleSignIn.signOut();
-              Navigator.pushReplacementNamed(context, '/login');
+
+              if (mounted) {
+                Navigator.pushReplacementNamed(context, '/login');
+              }
             },
           ),
         ],

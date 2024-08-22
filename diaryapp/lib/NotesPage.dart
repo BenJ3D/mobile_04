@@ -14,7 +14,6 @@ class NotesPage extends StatefulWidget {
 class _NotesPageState extends State<NotesPage> {
   final NoteService _noteService = NoteService();
   bool _isLoading = true;
-  late int numberEntriesDisplay = _noteService.notes.length;
 
   @override
   void initState() {
@@ -30,7 +29,9 @@ class _NotesPageState extends State<NotesPage> {
   Future<void> _loadNotes() async {
     setState(() => _isLoading = true);
     await _noteService.fetchNotes();
-    setState(() => _isLoading = false);
+    setState(() {
+      _isLoading = false;
+    });
   }
 
   Future<bool?> _confirmDelete(BuildContext context) {
@@ -96,7 +97,7 @@ class _NotesPageState extends State<NotesPage> {
                     Text(
                       '${moodIcons[note['icon']] ?? note['icon']}',
                       style: const TextStyle(fontSize: 32),
-                    ), // Afficher l'humeur ou le texte brut
+                    ),
                   ],
                 ),
                 const SizedBox(height: 10),
@@ -127,7 +128,7 @@ class _NotesPageState extends State<NotesPage> {
                 if (confirm == true) {
                   await _noteService.deleteNote(noteKey);
                   _loadNotes();
-                  Navigator.of(context).pop(); // Fermer le popup de détails
+                  Navigator.of(context).pop();
                 }
               },
             ),
@@ -152,7 +153,6 @@ class _NotesPageState extends State<NotesPage> {
               ),
               Flexible(
                 child: Text(
-                  // '(total 123456789123456123456789456123)',
                   '(total entries: ${_noteService.notes.length})',
                   maxLines: 3,
                   style: const TextStyle(
@@ -175,7 +175,7 @@ class _NotesPageState extends State<NotesPage> {
             : _noteService.notes.isEmpty
                 ? const Center(child: Text('No notes found'))
                 : ListView.builder(
-                    itemCount: numberEntriesDisplay,
+                    itemCount: _noteService.notes.length,
                     itemBuilder: (context, index) {
                       final note = _noteService.notes[index];
                       final String noteKey = note['key'];
@@ -238,7 +238,7 @@ class _NotesPageState extends State<NotesPage> {
                                         await _confirmDelete(context);
                                     if (confirm == true) {
                                       await _noteService.deleteNote(noteKey);
-                                      _loadNotes();
+                                      await _loadNotes();
                                     }
                                   },
                                 ),

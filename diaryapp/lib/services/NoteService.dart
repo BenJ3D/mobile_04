@@ -18,10 +18,8 @@ class NoteService {
   }
 
   Future<void> fetchNotes() async {
-    print('et bah alors ????');
     final user = _auth.currentUser;
     if (user == null || user.email == null) {
-      print('et bah alors ???? V222222222');
       _notes = [];
       if (_updateCallback != null) {
         _updateCallback!();
