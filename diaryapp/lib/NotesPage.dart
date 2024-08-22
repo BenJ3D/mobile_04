@@ -30,6 +30,79 @@ class _NotesPageState extends State<NotesPage> {
     setState(() => _isLoading = false);
   }
 
+  Future<bool?> _confirmDelete(BuildContext context) {
+    return showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Delete Note'),
+          content: const Text('Are you sure you want to delete this note?'),
+          actions: [
+            TextButton(
+              child: const Text('Cancel'),
+              onPressed: () {
+                Navigator.of(context).pop(false);
+              },
+            ),
+            TextButton(
+              child: const Text('Delete'),
+              onPressed: () {
+                Navigator.of(context).pop(true);
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showNoteDetailsDialog(Map<String, dynamic> note, String noteKey) {
+    final DateTime date =
+        DateTime.fromMillisecondsSinceEpoch(note['date'] as int);
+    final String formattedDate = DateFormat('dd/MM/yyyy HH:mm').format(date);
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(note['title']),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                Text('Date: $formattedDate'),
+                const SizedBox(height: 10),
+                Text('Icon: ${note['icon']}'),
+                const SizedBox(height: 10),
+                Text('Text:'),
+                const SizedBox(height: 5),
+                Text(note['text']),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              child: const Text('Close'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: const Text('Delete', style: TextStyle(color: Colors.red)),
+              onPressed: () async {
+                final confirm = await _confirmDelete(context);
+                if (confirm == true) {
+                  await _noteService.deleteNote(noteKey);
+                  _loadNotes();
+                  Navigator.of(context).pop(); // Fermer le popup de détails
+                }
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -49,16 +122,13 @@ class _NotesPageState extends State<NotesPage> {
               : ListView.builder(
                   itemCount: _noteService.notes.length >= 5
                       ? 5
-                      : _noteService.notes
-                          .length, // Utilisez la longueur réelle de la liste
+                      : _noteService.notes.length,
                   itemBuilder: (context, index) {
                     final note = _noteService.notes[index];
                     final String noteKey = note['key'];
 
-                    // Convertir le timestamp en DateTime
                     final DateTime date = DateTime.fromMillisecondsSinceEpoch(
                         note['date'] as int);
-                    // Formater la date
                     final String formattedDate =
                         DateFormat('dd/MM/yyyy HH:mm').format(date);
 
@@ -80,50 +150,19 @@ class _NotesPageState extends State<NotesPage> {
                             ),
                           ],
                         ),
-                        trailing: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            IconButton(
-                              icon: const Icon(Icons.delete,
-                                  color: Colors.blueGrey),
-                              onPressed: () async {
-                                // Confirmer la suppression
-                                final confirm = await showDialog(
-                                  context: context,
-                                  builder: (BuildContext context) {
-                                    return AlertDialog(
-                                      title: const Text('Delete Note'),
-                                      content: const Text(
-                                          'Are you sure you want to delete this note?'),
-                                      actions: [
-                                        TextButton(
-                                          child: const Text('Cancel'),
-                                          onPressed: () {
-                                            Navigator.of(context).pop(false);
-                                          },
-                                        ),
-                                        TextButton(
-                                          child: const Text('Delete'),
-                                          onPressed: () {
-                                            Navigator.of(context).pop(true);
-                                          },
-                                        ),
-                                      ],
-                                    );
-                                  },
-                                );
-
-                                if (confirm == true) {
-                                  // Supprimer la note
-                                  await _noteService.deleteNote(noteKey);
-                                  _loadNotes();
-                                }
-                              },
-                            ),
-                          ],
+                        trailing: IconButton(
+                          icon:
+                              const Icon(Icons.delete, color: Colors.blueGrey),
+                          onPressed: () async {
+                            final confirm = await _confirmDelete(context);
+                            if (confirm == true) {
+                              await _noteService.deleteNote(noteKey);
+                              _loadNotes();
+                            }
+                          },
                         ),
                         onTap: () {
-                          // Action on tap
+                          _showNoteDetailsDialog(note, noteKey);
                         },
                       ),
                     );
