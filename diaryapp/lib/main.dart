@@ -10,7 +10,7 @@ import 'firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await dotenv.load(fileName: ".env"); // Chargez les variables d'environnement
+  await dotenv.load(fileName: ".env");
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
@@ -60,8 +60,15 @@ class AuthWrapper extends StatelessWidget {
   }
 }
 
-class LoginPage extends StatelessWidget {
+class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
+
+  @override
+  _LoginPageState createState() => _LoginPageState();
+}
+
+class _LoginPageState extends State<LoginPage> {
+  bool _isLoading = false;
 
   @override
   Widget build(BuildContext context) {
@@ -75,58 +82,72 @@ class LoginPage extends StatelessWidget {
         ),
       ),
       body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            ElevatedButton(
-              onPressed: () async {
-                User? user = await signInWithGoogle();
-                if (user != null) {
-                  Navigator.pushReplacementNamed(context, '/diary');
-                }
-              },
-              style: ElevatedButton.styleFrom(
-                foregroundColor: Theme.of(context).primaryColorLight,
-                backgroundColor: Theme.of(context).primaryColor,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 50, vertical: 15),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(30),
-                ),
-                elevation: 5,
-              ),
-              child: const Text(
-                'Login with Google',
-                style: TextStyle(fontSize: 24),
-              ),
+        child: ElevatedButton(
+          onPressed: _isLoading ? null : _showLoginOptions,
+          style: ElevatedButton.styleFrom(
+            foregroundColor: Theme.of(context).primaryColorLight,
+            backgroundColor: Theme.of(context).primaryColor,
+            padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 15),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(30),
             ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () async {
-                User? user = await signInWithGitHub(context);
-                if (user != null) {
-                  Navigator.pushReplacementNamed(context, '/diary');
-                }
-              },
-              style: ElevatedButton.styleFrom(
-                foregroundColor: Theme.of(context).primaryColorLight,
-                backgroundColor: Theme.of(context).primaryColor,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 50, vertical: 15),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(30),
+            elevation: 5,
+          ),
+          child: _isLoading
+              ? const CircularProgressIndicator(color: Colors.white)
+              : const Text(
+                  'Login',
+                  style: TextStyle(fontSize: 24),
                 ),
-                elevation: 5,
-              ),
-              child: const Text(
-                'Login with GitHub',
-                style: TextStyle(fontSize: 24),
-              ),
-            ),
-          ],
         ),
       ),
     );
+  }
+
+  void _showLoginOptions() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Choose login method'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ElevatedButton(
+                onPressed: () => _handleLogin(signInWithGoogle),
+                child: const Text('Login with Google'),
+              ),
+              const SizedBox(height: 10),
+              ElevatedButton(
+                onPressed: () => _handleLogin(signInWithGitHub),
+                child: const Text('Login with GitHub'),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _handleLogin(Future<User?> Function() signInMethod) async {
+    Navigator.of(context).pop(); // Ferme le dialogue
+    setState(() {
+      _isLoading = true;
+    });
+    try {
+      User? user = await signInMethod();
+      if (user != null) {
+        Navigator.pushReplacementNamed(context, '/diary');
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Erreur d\'authentification: $e')),
+      );
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
   }
 
   Future<User?> signInWithGoogle() async {
@@ -147,34 +168,20 @@ class LoginPage extends StatelessWidget {
     return userCredential.user;
   }
 
-  Future<User?> signInWithGitHub(BuildContext context) async {
-    try {
-      // Create a GitHubSignIn instance
-      final GitHubSignIn gitHubSignIn = GitHubSignIn(
-        clientId: dotenv.env['GITHUB_CLIENT_ID']!,
-        clientSecret: dotenv.env['GITHUB_CLIENT_SECRET']!,
-        redirectUrl: dotenv.env['GITHUB_REDIRECT_URL']!,
-      );
+  Future<User?> signInWithGitHub() async {
+    final GitHubSignIn gitHubSignIn = GitHubSignIn(
+      clientId: dotenv.env['GITHUB_CLIENT_ID']!,
+      clientSecret: dotenv.env['GITHUB_CLIENT_SECRET']!,
+      redirectUrl: dotenv.env['GITHUB_REDIRECT_URL']!,
+    );
 
-      // Trigger the sign-in flow
-      final result = await gitHubSignIn.signIn(context);
+    final result = await gitHubSignIn.signIn(context);
 
-      if (result.status == GitHubSignInResultStatus.ok) {
-        // Create a credential from the access token
-        final githubAuthCredential =
-            GithubAuthProvider.credential(result.token!);
-
-        // Sign in to Firebase with the GitHub credential
-        final UserCredential userCredential = await FirebaseAuth.instance
-            .signInWithCredential(githubAuthCredential);
-        return userCredential.user;
-      }
-    } catch (e) {
-      print('Erreur lors de l\'authentification GitHub: $e');
-      // Affichez un message d'erreur à l'utilisateur
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Erreur d\'authentification: $e')),
-      );
+    if (result.status == GitHubSignInResultStatus.ok) {
+      final githubAuthCredential = GithubAuthProvider.credential(result.token!);
+      final UserCredential userCredential = await FirebaseAuth.instance
+          .signInWithCredential(githubAuthCredential);
+      return userCredential.user;
     }
     return null;
   }
