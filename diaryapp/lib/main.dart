@@ -2,12 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:github_sign_in/github_sign_in.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 import 'DiaryPage.dart';
 import 'firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await dotenv.load(fileName: ".env"); // Chargez les variables d'environnement
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
@@ -44,7 +47,7 @@ class AuthWrapper extends StatelessWidget {
       stream: FirebaseAuth.instance.userChanges(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const CircularProgressIndicator(); // ou un écran de chargement
+          return const CircularProgressIndicator();
         }
 
         if (snapshot.hasData) {
@@ -72,26 +75,55 @@ class LoginPage extends StatelessWidget {
         ),
       ),
       body: Center(
-        child: ElevatedButton(
-          onPressed: () async {
-            User? user = await signInWithGoogle();
-            if (user != null) {
-              Navigator.pushReplacementNamed(context, '/diary');
-            }
-          },
-          style: ElevatedButton.styleFrom(
-            foregroundColor: Theme.of(context).primaryColorLight,
-            backgroundColor: Theme.of(context).primaryColor,
-            padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 15),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(30),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            ElevatedButton(
+              onPressed: () async {
+                User? user = await signInWithGoogle();
+                if (user != null) {
+                  Navigator.pushReplacementNamed(context, '/diary');
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                foregroundColor: Theme.of(context).primaryColorLight,
+                backgroundColor: Theme.of(context).primaryColor,
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 50, vertical: 15),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(30),
+                ),
+                elevation: 5,
+              ),
+              child: const Text(
+                'Login with Google',
+                style: TextStyle(fontSize: 24),
+              ),
             ),
-            elevation: 5,
-          ),
-          child: const Text(
-            'Login',
-            style: TextStyle(fontSize: 24),
-          ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () async {
+                User? user = await signInWithGitHub(context);
+                if (user != null) {
+                  Navigator.pushReplacementNamed(context, '/diary');
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                foregroundColor: Theme.of(context).primaryColorLight,
+                backgroundColor: Theme.of(context).primaryColor,
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 50, vertical: 15),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(30),
+                ),
+                elevation: 5,
+              ),
+              child: const Text(
+                'Login with GitHub',
+                style: TextStyle(fontSize: 24),
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -113,5 +145,37 @@ class LoginPage extends StatelessWidget {
     final UserCredential userCredential =
         await FirebaseAuth.instance.signInWithCredential(credential);
     return userCredential.user;
+  }
+
+  Future<User?> signInWithGitHub(BuildContext context) async {
+    try {
+      // Create a GitHubSignIn instance
+      final GitHubSignIn gitHubSignIn = GitHubSignIn(
+        clientId: dotenv.env['GITHUB_CLIENT_ID']!,
+        clientSecret: dotenv.env['GITHUB_CLIENT_SECRET']!,
+        redirectUrl: dotenv.env['GITHUB_REDIRECT_URL']!,
+      );
+
+      // Trigger the sign-in flow
+      final result = await gitHubSignIn.signIn(context);
+
+      if (result.status == GitHubSignInResultStatus.ok) {
+        // Create a credential from the access token
+        final githubAuthCredential =
+            GithubAuthProvider.credential(result.token!);
+
+        // Sign in to Firebase with the GitHub credential
+        final UserCredential userCredential = await FirebaseAuth.instance
+            .signInWithCredential(githubAuthCredential);
+        return userCredential.user;
+      }
+    } catch (e) {
+      print('Erreur lors de l\'authentification GitHub: $e');
+      // Affichez un message d'erreur à l'utilisateur
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Erreur d\'authentification: $e')),
+      );
+    }
+    return null;
   }
 }

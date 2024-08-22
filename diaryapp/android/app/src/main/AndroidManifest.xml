@@ -3,7 +3,8 @@
     <application
         android:label="diaryapp"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/ic_launcher"
+        android:enableOnBackInvokedCallback="true"> <!-- Ajout de cet attribut pour résoudre l'avertissement OnBackInvokedCallback -->
 
         <!-- Google Sign-In meta-data -->
         <meta-data

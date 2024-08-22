@@ -23,6 +23,14 @@
           }
         },
         {
+          "client_id": "485031165296-mgir4qr10m9hfd5cpsb985s181027hnb.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.diaryapp",
+            "certificate_hash": "3ecb09c64ba114348928aea021678aa9f8150394"
+          }
+        },
+        {
           "client_id": "485031165296-njordfi9sr0jltb0ctqvjsld38pnetdb.apps.googleusercontent.com",
           "client_type": 3
         }
