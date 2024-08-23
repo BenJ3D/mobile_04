@@ -165,7 +165,7 @@ class _NotesPageState extends State<NotesPage> {
           ),
           actions: [
             IconButton(
-              icon: const Icon(Icons.refresh),
+              icon: const Icon(Icons.refresh, color: Colors.white,),
               onPressed: _loadNotes,
             ),
           ],
