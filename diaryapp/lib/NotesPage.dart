@@ -1,4 +1,5 @@
 import 'package:diaryapp/services/NoteService.dart';
+import 'package:diaryapp/utils/dialog_util.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -155,81 +156,8 @@ class _NotesPageState extends State<NotesPage> {
   }
 
   void _showNoteDetailsDialog(Map<String, dynamic> note, String noteKey) {
-    final DateTime date =
-        DateTime.fromMillisecondsSinceEpoch(note['date'] as int);
-    final String formattedDate = DateFormat('dd/MM/yyyy').format(date);
-
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text(
-            note['title'],
-            style: const TextStyle(
-                fontSize: 13,
-                fontStyle: FontStyle.italic,
-                color: Colors.grey,
-                fontWeight: FontWeight.w600),
-          ),
-          content: SingleChildScrollView(
-            child: ListBody(
-              children: <Widget>[
-                Text('$formattedDate',
-                    style: const TextStyle(
-                      fontSize: 15,
-                    )),
-                const SizedBox(height: 10),
-                Row(
-                  children: [
-                    const Text(
-                      'Mood:',
-                      style: TextStyle(fontSize: 14),
-                    ),
-                    const SizedBox(
-                      width: 40,
-                    ),
-                    Text(
-                      '${moodIcons[note['icon']] ?? note['icon']}',
-                      style: const TextStyle(fontSize: 32),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 10),
-                const Text(
-                  'Text:',
-                  style: TextStyle(
-                      fontSize: 13,
-                      fontStyle: FontStyle.italic,
-                      color: Colors.grey,
-                      fontWeight: FontWeight.w600),
-                ),
-                const SizedBox(height: 5),
-                Text(note['text']),
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              child: const Text('Close'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-            TextButton(
-              child: const Text('Delete', style: TextStyle(color: Colors.red)),
-              onPressed: () async {
-                final confirm = await _confirmDelete(context);
-                if (confirm == true) {
-                  await _noteService.deleteNote(noteKey);
-                  _loadNotes();
-                  Navigator.of(context).pop();
-                }
-              },
-            ),
-          ],
-        );
-      },
-    );
+    showNoteDetailsDialog(
+        context, note, noteKey, _noteService, _confirmDelete, _loadNotes);
   }
 
   @override
