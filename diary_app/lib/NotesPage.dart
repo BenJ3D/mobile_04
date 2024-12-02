@@ -114,13 +114,10 @@ class _NotesPageState extends State<NotesPage> {
   }
 
   void _addNote() async {
-    // Récupérer l'utilisateur actuellement connecté
     User? currentUser = _auth.currentUser;
-
-    // Vérifiez si l'utilisateur est bien connecté
     if (currentUser != null) {
       _selectedMood =
-          'neutral'; // Réinitialiser la valeur par défaut avant d'afficher le dialogue
+          'neutral'; 
       _showAddNoteDialog();
     } else {
       print("No user is signed in");
