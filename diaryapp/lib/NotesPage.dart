@@ -16,7 +16,7 @@ class _NotesPageState extends State<NotesPage> {
   final NoteService _noteService = NoteService();
   final FirebaseAuth _auth = FirebaseAuth.instance;
   bool _isLoading = true;
-  String _selectedMood = 'neutral'; // Valeur par défaut
+  String _selectedMood = 'neutral';
 
   @override
   void initState() {
@@ -98,13 +98,11 @@ class _NotesPageState extends State<NotesPage> {
                       await _noteService.addNote(
                         titleController.text,
                         textController.text,
-                        _selectedMood, // Sauvegarde l'émoticône sélectionnée
+                        _selectedMood,
                       );
                       _loadNotes();
                       Navigator.of(context).pop();
-                    } else {
-                      // Vous pouvez ajouter une alerte ici pour indiquer que les champs sont requis
-                    }
+                    } else {}
                   },
                 ),
               ],
@@ -163,54 +161,52 @@ class _NotesPageState extends State<NotesPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          backgroundColor: Colors.blueGrey.shade800,
-          title: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text(
-                'Your last diary :',
-                style:
-                    TextStyle(color: Colors.grey, fontStyle: FontStyle.italic),
+      appBar: AppBar(
+        backgroundColor: Colors.blueGrey.shade800,
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text(
+              'Your last diary :',
+              style: TextStyle(color: Colors.grey, fontStyle: FontStyle.italic),
+            ),
+            Flexible(
+              child: Text(
+                '(total entries: ${_noteService.notes.length})',
+                maxLines: 3,
+                style: const TextStyle(
+                    color: Colors.grey,
+                    fontStyle: FontStyle.italic,
+                    fontSize: 14.5),
               ),
-              Flexible(
-                child: Text(
-                  '(total entries: ${_noteService.notes.length})',
-                  maxLines: 3,
-                  style: const TextStyle(
-                      color: Colors.grey,
-                      fontStyle: FontStyle.italic,
-                      fontSize: 14.5),
-                ),
-              ),
-            ],
-          ),
-          actions: [
-            IconButton(
-              icon: const Icon(
-                Icons.refresh,
-                color: Colors.white,
-              ),
-              onPressed: _loadNotes,
             ),
           ],
         ),
-        body: _isLoading
-            ? const Center(child: CircularProgressIndicator())
-            : _noteService.notes.isEmpty
-                ? const Center(child: Text('No notes found'))
-                : Column(
-                    children: [
-                      Expanded(
-                        child: ListView.builder(
+        actions: [
+          IconButton(
+            icon: const Icon(
+              Icons.refresh,
+              color: Colors.white,
+            ),
+            onPressed: _loadNotes,
+          ),
+        ],
+      ),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : Column(
+              children: [
+                Expanded(
+                  child: _noteService.notes.isEmpty
+                      ? const Center(child: Text('No notes found'))
+                      : ListView.builder(
                           itemCount: _noteService.notes.length,
                           itemBuilder: (context, index) {
                             final note = _noteService.notes[index];
                             final String noteKey = note['key'];
 
-                            final DateTime date =
-                                DateTime.fromMillisecondsSinceEpoch(
-                                    note['date'] as int);
+                            final DateTime date = DateTime.fromMillisecondsSinceEpoch(
+                                note['date'] as int);
                             final String formattedDate =
                                 DateFormat('dd/MM/yyyy').format(date);
 
@@ -223,8 +219,7 @@ class _NotesPageState extends State<NotesPage> {
                                 hoverColor: Colors.transparent,
                                 splashColor: Colors.transparent,
                                 onTap: () {
-                                  _showNoteDetailsDialog(note,
-                                      noteKey); // Afficher les détails de la note
+                                  _showNoteDetailsDialog(note, noteKey);
                                 },
                                 child: Padding(
                                   padding: const EdgeInsets.all(8.0),
@@ -237,12 +232,10 @@ class _NotesPageState extends State<NotesPage> {
                                           children: [
                                             Text(
                                               note['title'],
-                                              style:
-                                                  const TextStyle(fontSize: 22),
+                                              style: const TextStyle(
+                                                  fontSize: 22),
                                             ),
-                                            const SizedBox(
-                                                height:
-                                                    4), // Espace entre le titre et la date
+                                            const SizedBox(height: 4),
                                             Text(
                                               formattedDate,
                                               style: const TextStyle(
@@ -254,12 +247,9 @@ class _NotesPageState extends State<NotesPage> {
                                       ),
                                       Text(
                                         moodIcons[note['icon']] ?? note['icon'],
-                                        style: const TextStyle(
-                                            fontSize:
-                                                30), // Taille réduite de l'émoticône
+                                        style: const TextStyle(fontSize: 30),
                                       ),
                                       const SizedBox(width: 42),
-                                      // Espace entre l'émoticône et le bouton de suppression
                                       IconButton(
                                         icon: const Icon(Icons.delete,
                                             color: Colors.blueGrey),
@@ -280,12 +270,13 @@ class _NotesPageState extends State<NotesPage> {
                             );
                           },
                         ),
-                      ),
-                      ElevatedButton(
-                        onPressed: _addNote,
-                        child: const Text("New diary entry"),
-                      ),
-                    ],
-                  ));
+                ),
+                ElevatedButton(
+                  onPressed: _addNote,
+                  child: const Text("New diary entry"),
+                ),
+              ],
+            ),
+    );
   }
 }
